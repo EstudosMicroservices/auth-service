@@ -1,0 +1,32 @@
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=redis
+      - REDIS_ARGS=--requirepass redis
+    networks:
+      - mynetwork
+    command: ["redis-server", "--requirepass", "redis"]
+    restart: always
+
+  app:
+    depends_on:
+      redis:
+        condition: service_healthy
+    build: .
+    container_name: auth-service
+    environment:
+      SPRING_REDIS_HOST: localhost
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: redis
+    ports:
+      - "8083:8080"
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
